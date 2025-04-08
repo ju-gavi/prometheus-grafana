@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  prometheus-service-demo-0:
+    image: docker.io/julius/prometheus-demo-service:latest
+    ports:
+      - "10000:8080"
+    networks:
+      - prometheus-network
+
+  prometheus-service-demo-1:
+    image: docker.io/julius/prometheus-demo-service:latest
+    ports:
+      - "20000:8080"
+    networks:
+      - prometheus-network
+
+  prometheus-service-demo-2:
+    image: docker.io/julius/prometheus-demo-service:latest
+    ports:
+      - "30000:8080"
+    networks:
+      - prometheus-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml   
+
+    networks:
+      - prometheus-network
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana  
+      
+    depends_on:
+      - prometheus
+    networks:
+      - prometheus-network
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    networks:
+      - prometheus-network
+    restart: always
+
+networks:
+  prometheus-network:
+    driver: bridge
+
+volumes:
+  grafana-storage:
+    driver: local
